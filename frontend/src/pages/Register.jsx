@@ -1,91 +1,175 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const Register = () => {
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
-  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirm: '',
+  });
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleChange = useCallback((e) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    setErrors(prev => ({ ...prev, [e.target.name]: '' }));
-  }, []);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+  };
 
   const validate = () => {
-    const errs = {};
-    if (!form.name || form.name.length < 2) errs.name = 'Name must be at least 2 characters';
-    if (!form.email) errs.email = 'Email is required';
-    if (!form.password || form.password.length < 6) errs.password = 'Password must be at least 6 characters';
-    if (form.password !== form.confirm) errs.confirm = 'Passwords do not match';
-    return errs;
+    const nextErrors = {};
+    if (!form.name.trim() || form.name.trim().length < 2) {
+      nextErrors.name = 'Name must be at least 2 characters';
+    }
+    if (!form.email.trim()) {
+      nextErrors.email = 'Email is required';
+    }
+    if (!form.password || form.password.length < 6) {
+      nextErrors.password = 'Password must be at least 6 characters';
+    }
+    if (form.password !== form.confirm) {
+      nextErrors.confirm = 'Passwords do not match';
+    }
+    return nextErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
+    const nextErrors = validate();
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
+    }
 
-    setLoading(true);
+    setSubmitting(true);
     try {
       await register(form.name, form.email, form.password);
-      toast.success('Account created! Welcome to Lynkr 🎉');
+      toast.success('Account created successfully');
       navigate('/dashboard');
     } catch (err) {
-      const detail = err.response?.data?.details?.[0]?.message;
-      const msg = detail || err.response?.data?.error || 'Registration failed.';
+      const detail = err?.response?.data?.details?.[0]?.message;
+      const msg = detail || err?.response?.data?.error || 'Registration failed.';
       toast.error(msg);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  const Field = ({ name, label, type = 'text', placeholder, autoComplete }) => (
-    <div>
-      <label className="block text-sm font-medium text-slate-300 mb-1.5">{label}</label>
-      <input
-        name={name}
-        type={type}
-        autoComplete={autoComplete}
-        value={form[name]}
-        onChange={handleChange}
-        placeholder={placeholder}
-        className={`input-field ${errors[name] ? 'border-red-500/70 focus:ring-red-500' : ''}`}
-      />
-      {errors[name] && <p className="mt-1 text-xs text-red-400">{errors[name]}</p>}
-    </div>
-  );
-
   return (
-    <div className="min-h-[80vh] flex items-center justify-center animate-fade-in">
+    <div className="min-h-[80vh] flex items-center justify-center">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <span className="text-4xl">🔗</span>
-          <h1 className="text-3xl font-extrabold text-white mt-3 mb-2">Create your account</h1>
-          <p className="text-slate-400">Start shortening links for free</p>
+          <h1 className="text-3xl font-extrabold text-white mt-3 mb-2">
+            Create your account
+          </h1>
+          <p className="text-slate-400">
+            Start shortening and tracking your links.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="card flex flex-col gap-5">
-          <Field name="name" label="Full name" placeholder="Jane Doe" autoComplete="name" />
-          <Field name="email" label="Email" type="email" placeholder="you@example.com" autoComplete="email" />
-          <Field name="password" label="Password" type="password" placeholder="At least 6 characters" autoComplete="new-password" />
-          <Field name="confirm" label="Confirm password" type="password" placeholder="Repeat password" autoComplete="new-password" />
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">
+              Full name
+            </label>
+            <input
+              name="name"
+              type="text"
+              autoComplete="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Jane Doe"
+              className={`input-field ${
+                errors.name ? 'border-red-500/70 focus:ring-red-500' : ''
+              }`}
+            />
+            {errors.name && (
+              <p className="mt-1 text-xs text-red-400">{errors.name}</p>
+            )}
+          </div>
 
-          <button type="submit" disabled={loading} className="btn-primary w-full py-3 mt-1 text-base">
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Creating account…
-              </span>
-            ) : 'Create account'}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">
+              Email
+            </label>
+            <input
+              name="email"
+              type="email"
+              autoComplete="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="you@example.com"
+              className={`input-field ${
+                errors.email ? 'border-red-500/70 focus:ring-red-500' : ''
+              }`}
+            />
+            {errors.email && (
+              <p className="mt-1 text-xs text-red-400">{errors.email}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">
+              Password
+            </label>
+            <input
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="At least 6 characters"
+              className={`input-field ${
+                errors.password ? 'border-red-500/70 focus:ring-red-500' : ''
+              }`}
+            />
+            {errors.password && (
+              <p className="mt-1 text-xs text-red-400">{errors.password}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1.5">
+              Confirm password
+            </label>
+            <input
+              name="confirm"
+              type="password"
+              autoComplete="new-password"
+              value={form.confirm}
+              onChange={handleChange}
+              placeholder="Repeat password"
+              className={`input-field ${
+                errors.confirm ? 'border-red-500/70 focus:ring-red-500' : ''
+              }`}
+            />
+            {errors.confirm && (
+              <p className="mt-1 text-xs text-red-400">{errors.confirm}</p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="btn-primary w-full py-3 mt-1 text-base"
+          >
+            {submitting ? 'Creating account…' : 'Create account'}
           </button>
 
           <p className="text-center text-sm text-slate-400">
             Already have an account?{' '}
-            <Link to="/login" className="text-brand-400 hover:text-brand-300 font-medium transition-colors">
+            <Link
+              to="/login"
+              className="text-brand-400 hover:text-brand-300 font-medium transition-colors"
+            >
               Sign in
             </Link>
           </p>

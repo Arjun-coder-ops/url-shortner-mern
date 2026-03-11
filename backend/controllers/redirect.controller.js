@@ -5,13 +5,25 @@ const Url = require('../models/Url.model');
  * Looks up the short code, increments the click counter, records
  * click metadata, and redirects to the original URL.
  */
-const redirect = async (req, res) => {
+const redirect = async (req, res, next) => {
   try {
     const { shortCode } = req.params;
 
     const url = await Url.findOne({ shortCode, isActive: true });
 
     if (!url) {
+      // If this looks like a frontend route, fall through to the SPA handler.
+      const accept = req.headers.accept || '';
+      const path = req.path || '';
+      const isFrontendRoute =
+        path === '/' ||
+        /^\/(login|register|dashboard|shorten)(\/|$)/.test(path) ||
+        /^\/analytics\/[^/]+$/.test(path);
+
+      if (accept.includes('text/html') && isFrontendRoute) {
+        return next();
+      }
+
       return res.status(404).send(`
         <!DOCTYPE html>
         <html>
@@ -19,7 +31,7 @@ const redirect = async (req, res) => {
             <div style="text-align:center">
               <h1 style="font-size:4rem;margin:0">404</h1>
               <p>Short link not found or has been removed.</p>
-              <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}" style="color:#6366f1">← Go home</a>
+              <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}" style="color:#6366f1"><- Go home</a>
             </div>
           </body>
         </html>
@@ -35,7 +47,7 @@ const redirect = async (req, res) => {
             <div style="text-align:center">
               <h1 style="font-size:4rem;margin:0">410</h1>
               <p>This link has expired.</p>
-              <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}" style="color:#6366f1">← Go home</a>
+              <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}" style="color:#6366f1"><- Go home</a>
             </div>
           </body>
         </html>

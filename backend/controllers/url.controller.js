@@ -21,7 +21,7 @@ const shortenUrl = async (req, res) => {
       return res.status(409).json({
         error: customCode
           ? 'Custom code already taken. Please choose another.'
-          : 'Code collision – please retry.',
+          : 'Code collision - please retry.',
       });
     }
 

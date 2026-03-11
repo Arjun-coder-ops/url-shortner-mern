@@ -14,10 +14,10 @@ const validate = (req, res, next) => {
   next();
 };
 
-// ── Auth validators ────────────────────────────────────────────────────────────
+// -- Auth validators -----------------------------------------------------------
 const registerValidator = [
   body('name').trim().notEmpty().withMessage('Name is required')
-    .isLength({ min: 2, max: 50 }).withMessage('Name must be 2–50 characters'),
+    .isLength({ min: 2, max: 50 }).withMessage('Name must be 2-50 characters'),
   body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   validate,
@@ -29,7 +29,7 @@ const loginValidator = [
   validate,
 ];
 
-// ── URL validators ─────────────────────────────────────────────────────────────
+// -- URL validators ------------------------------------------------------------
 const shortenValidator = [
   body('originalUrl')
     .trim()
@@ -40,7 +40,7 @@ const shortenValidator = [
     .optional()
     .trim()
     .isAlphanumeric().withMessage('Custom code must be alphanumeric')
-    .isLength({ min: 3, max: 20 }).withMessage('Custom code must be 3–20 characters'),
+    .isLength({ min: 3, max: 20 }).withMessage('Custom code must be 3-20 characters'),
   body('title').optional().trim().isLength({ max: 100 }).withMessage('Title max 100 characters'),
   body('expiresAt')
     .optional()
