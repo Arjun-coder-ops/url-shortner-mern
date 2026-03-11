@@ -39,12 +39,12 @@ app.use('/api/url', urlRoutes);
 app.use('/', redirectRoutes); // short-code redirects live at root
 
 // Serve frontend (production build) and support SPA routing
-const frontendDist = path.resolve(__dirname, '..', 'frontend', 'dist');
-app.use(express.static(frontendDist));
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api')) return next();
-  return res.sendFile(path.join(frontendDist, 'index.html'));
-});
+// const frontendDist = path.resolve(__dirname, '..', 'frontend', 'dist');
+// app.use(express.static(frontendDist));
+// app.get('*', (req, res, next) => {
+//   if (req.path.startsWith('/api')) return next();
+//   return res.sendFile(path.join(frontendDist, 'index.html'));
+// });
 
 // Health check
 app.get('/api/health', (req, res) => {
