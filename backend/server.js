@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -38,13 +39,17 @@ app.use('/api/auth', authRoutes);
 app.use('/api/url', urlRoutes);
 app.use('/', redirectRoutes); // short-code redirects live at root
 
-// Serve frontend (production build) and support SPA routing
+// Serve frontend (production build) only when a dist folder exists.
+// This lets you deploy the backend alone on Render (API + redirects)
+// and host the React app separately on Vercel without ENOENT errors.
 const frontendDist = path.resolve(__dirname, '..', 'frontend', 'dist');
-app.use(express.static(frontendDist));
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api')) return next();
-  return res.sendFile(path.join(frontendDist, 'index.html'));
-});
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    return res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+}
 
 // Health check
 app.get('/api/health', (req, res) => {
