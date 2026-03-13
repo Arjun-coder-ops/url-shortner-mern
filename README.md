@@ -1,11 +1,44 @@
 # 🔗 Lynkr — Production URL Shortener
 
-A full-stack URL shortener with analytics, authentication, QR codes, and rate limiting.
+A **full-stack URL shortener** built with the MERN stack, featuring **authentication, analytics, QR codes, link expiration, and rate limiting**.  
+The frontend is responsive and optimized for both desktop and mobile screens.
 
 ## Tech Stack
 
 **Backend:** Node.js · Express · MongoDB · Mongoose · JWT · bcrypt · nanoid · express-validator · express-rate-limit · QRCode  
 **Frontend:** React 18 · Vite · TailwindCSS · Chart.js · React Router v6 · Axios · react-hot-toast
+
+---
+
+## Features
+
+- **Auth & Security**
+  - Email/password registration and login (JWT-based)
+  - Protected routes on both backend (`/api/url/*`) and frontend (dashboard, analytics, shorten page)
+  - Bcrypt-hashed passwords and JWT expiry (default 7 days)
+  - Global and per-endpoint **rate limiting** for abuse protection
+
+- **URL Shortening**
+  - Shorten any `http(s)` URL
+  - Optional **custom alias** (short code) with validation
+  - Optional **expiry date**, returning 410 _Gone_ when expired
+  - Per-user ownership of links
+
+- **Analytics & Dashboard**
+  - Total clicks and links count
+  - 14‑day clicks‑over‑time chart (all links)
+  - Per‑link 30‑day click history chart
+  - Recent click activity with timestamp and referrer
+
+- **QR Codes**
+  - Generate QR code PNGs for any short URL
+  - Download ready-to-use QR images
+
+- **Frontend UX**
+  - Fully responsive, Tailwind-based UI
+  - ProtectedRoute wrapper for auth‑only pages
+  - Toast notifications for success and error states
+  - Smooth charts built with Chart.js / react-chartjs-2
 
 ---
 
@@ -84,6 +117,30 @@ BASE_URL=http://localhost:5000
 CLIENT_URL=http://localhost:5173
 ```
 
+> In production (e.g. Render), set:
+> - `BASE_URL` to your backend public URL (e.g. `https://your-backend.onrender.com`)
+> - `CLIENT_URL` to your deployed frontend URL (e.g. `https://your-frontend.vercel.app`)
+
+### 2.1. Configure Frontend (.env)
+
+In `frontend`, create a `.env` (and/or `.env.production`) file:
+
+```bash
+VITE_API_URL=http://localhost:5000
+```
+
+For production (e.g. Vercel), set:
+
+```bash
+VITE_API_URL=https://your-backend.onrender.com
+```
+
+The React app always calls the backend via:
+
+- `VITE_API_URL + "/api"` → e.g. `https://your-backend.onrender.com/api`
+
+So the backend must be reachable at that base URL.
+
 ### 3. Run Backend
 
 ```bash
@@ -118,7 +175,10 @@ npm run dev          # Vite dev server with /api proxy
 cd frontend
 npm run build        # Creates dist/
 # Push to GitHub, import repo in Vercel
-# Set VITE_API_URL env var if using separate domains
+
+# In Vercel project settings (Environment Variables):
+#   VITE_API_URL = https://your-backend.onrender.com
+# Then trigger a new deploy
 ```
 
 ### Backend → Render
